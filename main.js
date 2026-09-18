@@ -14,7 +14,7 @@ async function getAdvice() {
     const advice = data.slip.advice;
     p_el.textContent = advice;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     p_el.textContent = error.message;
   } finally {
     but1.disabled = false;
