@@ -114,18 +114,18 @@ When reviewing any attempt: **what's correct → what's wrong → why → let th
 - **Definition of done:** The `async`/`await` version works identically to the Stage 1 version for the success path; the deliberately-broken-URL test correctly lands in `catch`.
 - **Optional future improvements:** — none yet —
 
-### Stage 3 — HTTP basics, `response.ok`, and real loading/error UI
+### Stage 3 — Loading UI and disabling the button mid-request
 
-- **Concepts to understand:** HTTP status codes (200, 404, 500, etc.) — a fetch can "succeed" (a response comes back) while still representing an error (e.g. 404), which is why `response.ok` must be checked explicitly rather than relying on `catch` alone. Modeling UI state for an async operation: idle → loading → success/error.
-- **Tools / APIs to use:** `response.ok`, `response.status`, toggling text/CSS classes to reflect loading/disabled/error states.
-- **Implementation objective:** The user always gets visible feedback: a loading indicator while the request is in flight, a clear on-page error message (not just a console log) if it fails, and the button can't be clicked again mid-request.
+*(Adjusted: the `response.ok`/HTTP-status-check and visible-error-message parts of this stage were pulled forward and already completed during Stage 2, on the learner's own initiative — verified via a real test of a broken URL path returning a non-2xx status. General 2xx/4xx/5xx category knowledge was also verified directly. Only the loading-state/UI-lockout part remains.)*
+
+- **Concepts to understand:** Modeling UI state for an async operation: idle → loading → success/error, and why the button needs to be locked during the "loading" state to prevent overlapping requests. *(HTTP status codes and `response.ok` — already covered, see `LEARNED.md`.)*
+- **Tools / APIs to use:** Toggling text/CSS classes/`disabled` attribute to reflect loading/disabled states.
+- **Implementation objective:** The user always gets visible feedback that a request is in flight, and can't trigger a second overlapping request while one is already running.
 - **Implementation tasks:**
   - Show a "Loading..." state (text change, spinner, or similar) immediately when the button is clicked; clear it when the request settles (success or failure).
-  - Disable the button while a request is in flight; re-enable it once settled.
-  - Check `response.ok` after `await fetch(...)`; if false, throw or branch into the error path instead of trying to parse JSON as if it succeeded.
-  - Render a friendly error message into the page (not only `console.log`) when something fails.
-- **Exercise / checkpoint:** Use DevTools to throttle the network and observe the loading state; simulate a failure (bad URL, or offline mode in DevTools) and confirm the on-page error path, not just the console.
-- **Definition of done:** Loading state visibly appears and clears correctly; a forced failure shows a visible on-page error message; the button cannot be double-clicked mid-request.
+  - Disable the button while a request is in flight; re-enable it once settled (success or error).
+- **Exercise / checkpoint:** Use DevTools network throttling to slow the request down enough to clearly observe the loading state and the disabled button; click rapidly to confirm a second request can't be triggered mid-flight.
+- **Definition of done:** Loading state visibly appears and clears correctly; the button cannot be double-clicked mid-request.
 - **Optional future improvements:** A "retry" button on failure (deferred).
 
 ### Stage 4 — Multiple requests: sequential vs. parallel
@@ -180,10 +180,10 @@ This plan is a living document, not a fixed contract written once.
 ## 8. Progress Checklist
 
 - [x] Stage 0 — Project setup and seeing the blocking problem
-- [ ] Stage 1 — Promises and `fetch()` with `.then()`
-- [ ] Stage 2 — `async`/`await` and `try`/`catch`
-- [ ] Stage 3 — HTTP basics, `response.ok`, and real loading/error UI
+- [x] Stage 1 — Promises and `fetch()` with `.then()`
+- [x] Stage 2 — `async`/`await` and `try`/`catch`
+- [x] Stage 3 — Loading UI and disabling the button mid-request
 - [ ] Stage 4 — Multiple requests: sequential vs. parallel
 - [ ] Stage 5 — Wrap-up and connecting back to the main path
 
-**Current status:** Stage 0 complete (confirmed: page froze during the busy-wait loop, click was queued not dropped, page recovered on its own once the loop finished). Next up: Stage 1.
+**Current status:** Stage 3 complete (loading text + disabled button while in flight, re-enabled via a `finally` block after being shown the duplication it replaces; verified with network throttling). Next up: Stage 4 (sequential vs. parallel requests).
