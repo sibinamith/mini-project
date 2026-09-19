@@ -97,3 +97,41 @@ async function getAdvice() {
 ```
 
 **Gotcha:** Before using `finally`, `but1.disabled = false` was written twice — once at the end of `try`, once in `catch` — which is exactly the duplication `finally` exists to remove.
+
+## `Promise.all()` for concurrent requests — and needing it *twice*
+
+`Promise.all([...])` takes an array of Promises and resolves once every one of them has resolved, running them concurrently rather than one after another. The array passed in must contain the Promises themselves — *not* already-`await`ed values — otherwise there's nothing left for `Promise.all` to run concurrently.
+
+**Why useful:** Fetching several independent things (e.g. 3 unrelated advice slips) is much faster done concurrently than in a sequential loop, since total time is close to the slowest single request instead of the sum of all of them.
+
+```javascript
+const responses = await Promise.all([
+  fetch(url), fetch(url), fetch(url),
+]); // 3 Response objects, run concurrently
+
+const result = await Promise.all(
+  responses.map((response) => response.json())
+); // .map() alone returns an array of Promises, not resolved data —
+   // needs its OWN Promise.all to actually resolve them
+```
+
+**Gotcha:** `responses.map((response) => response.json())` returns a plain *array full of Promises* (since `.json()` is itself async) — not a Promise that resolves to an array. `await`-ing a plain array does nothing useful (arrays aren't "thenable"). The fix is wrapping that `.map()` result in a second `Promise.all(...)`. This is the exact same "the first step only gives you a Response/Promise, not the real data" trap from [[promises and .then() chaining with fetch()]], just one level deeper because it's now an array of them.
+
+## Sequential (`await` in a loop) vs. parallel (`Promise.all`) requests
+
+Awaiting a `fetch()` inside a `for` loop runs each request one after another — the next one doesn't start until the previous fully resolves. `Promise.all([...])` dispatches every request up front and waits for all of them concurrently, so total time is closer to the slowest single request instead of the sum of all of them.
+
+**Why useful:** For independent requests (like 3 unrelated advice slips), parallel is strictly better — no reason to make a user wait for the sum of 3 round trips when they could all happen at once. Sequential is only *required* when request 2 needs data produced by request 1 (a real dependency), not just because a loop felt natural to write.
+
+```javascript
+// sequential — each waits for the last
+for (let i = 0; i < 3; i++) {
+  const response = await fetch(url);
+  result.push(await response.json());
+}
+
+// parallel — all dispatched together
+const responses = await Promise.all([fetch(url), fetch(url), fetch(url)]);
+```
+
+**Gotcha:** Measured with real `console.time`/`console.timeEnd` against the live Advice Slip API, the expected "parallel is ~3x faster" result didn't show up cleanly — timings were dominated by confounds outside the code's control: the very first request after a page load pays a one-time DNS/TCP/TLS connection-setup cost regardless of which pattern ran it, and after that both patterns converged to similar, noisy numbers, likely due to server-side/network factors neither client-side pattern can fix. The code pattern is still correct — real-world benchmarking just has more noise than the simple theory suggests, and a fair test requires warming up the connection first and averaging several runs.

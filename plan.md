@@ -183,7 +183,7 @@ This plan is a living document, not a fixed contract written once.
 - [x] Stage 1 — Promises and `fetch()` with `.then()`
 - [x] Stage 2 — `async`/`await` and `try`/`catch`
 - [x] Stage 3 — Loading UI and disabling the button mid-request
-- [ ] Stage 4 — Multiple requests: sequential vs. parallel
-- [ ] Stage 5 — Wrap-up and connecting back to the main path
+- [x] Stage 4 — Multiple requests: sequential vs. parallel
+- [x] Stage 5 — Wrap-up and connecting back to the main path
 
-**Current status:** Stage 3 complete (loading text + disabled button while in flight, re-enabled via a `finally` block after being shown the duplication it replaces; verified with network throttling). Next up: Stage 4 (sequential vs. parallel requests).
+**Current status:** PROJECT COMPLETE. `README.md` written; `expense-tracker/plan.md` Sections 27 and 33 updated to reflect async JS as done and the project as ready for TypeScript. Final checkpoint passed: learner correctly traced the full click → suspended-call-stack → loading UI → `response.ok` check → `try`/`catch`/`finally` lifecycle unprompted, after self-correcting an initial misconception about the call stack staying occupied during `await` (caught by reasoning from Stage 3's own observed evidence that the page stays responsive during a fetch).

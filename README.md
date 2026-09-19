@@ -1,65 +1,76 @@
 # Advice Box
 
-A small vanilla JavaScript learning project for practicing asynchronous JavaScript in the browser. It uses the public [Advice Slip API](https://api.adviceslip.com/advice) to fetch and display random advice.
+Advice Box is a small vanilla JavaScript browser project for practicing asynchronous JavaScript. It fetches random advice from the public [Advice Slip API](https://api.adviceslip.com/advice) and renders the responses in the page.
 
-The project is intentionally being built in stages. The current implementation covers the first live API request with Promise chaining; later stages will add `async`/`await`, visible loading and error states, and sequential-versus-parallel requests.
-
-## Current Status
-
-**Stage 1 in progress: Promises and `fetch()` with `.then()`**
-
-Clicking **Get Advice** sends a `GET` request to the Advice Slip API, parses the JSON response, and displays `data.slip.advice` on the page.
-
-The current implementation logs request errors to the browser console. Visible loading and error UI are planned for Stage 3.
+The project compares one request, three concurrent requests, and three sequential requests. It also demonstrates `async`/`await`, `try`/`catch`, loading states, disabled controls, and console timing.
 
 ## Features
 
-- Fetch one piece of live advice from the Advice Slip API
-- Parse a JSON response with `response.json()`
-- Display the advice in the page
-- Practice Promise states and `.then()`/`.catch()` chaining
-- Learn how browser code handles work that finishes later
+- Fetch and display one piece of advice with `async`/`await`.
+- Show a loading message and disable the single-request button while its request is pending.
+- Display caught request or response-parsing errors in the page.
+- Fetch three independent responses concurrently with `Promise.all()`.
+- Fetch three responses sequentially with `await` inside a loop.
+- Log `parallel` and `sequential` timings with `console.time()` and `console.timeEnd()`.
 
-Planned project features:
+## Architecture
 
-- Rewrite the request with `async`/`await` and `try`/`catch`
-- Show loading and error states in the UI
-- Prevent duplicate clicks while a request is in flight
-- Fetch three pieces of advice sequentially and with `Promise.all()`
-- Compare the timing and use cases of sequential and parallel requests
+`index.html` defines the buttons and output elements. `main.js` attaches click handlers, calls the API with the browser Fetch API, and renders the returned advice.
+
+```mermaid
+flowchart LR
+    Page[index.html] -->|click handlers| Logic[main.js]
+    Logic -->|GET advice| API[Advice Slip API]
+    API -->|JSON response| Logic
+    Logic -->|advice text or error| Page
+```
 
 ## Project Structure
 
 ```text
 mini-project/
-├── index.html                  # Page structure and advice output element
-├── main.js                     # Button handler and API request
-├── LEARNED.md                  # Concepts understood during the project
+├── index.html                  # Buttons and output elements
+├── main.js                     # Async request handlers and rendering
+├── LEARNED.md                  # Concepts encountered and verified
 ├── plan.md                     # Staged learning plan and progress checklist
-└── stage-13-async-plan.md      # Original standalone project brief
+├── README.md                   # Project documentation
+└── stage-13-async-plan.md      # Original project brief
 ```
 
-## Technology
+## Technology Stack
 
 - HTML
-- JavaScript
+- Vanilla JavaScript
 - Browser Fetch API
 - Advice Slip API
 - No framework, build tool, or third-party request library
 
-## Running the Project
+## Prerequisites
 
-This is a static browser project. Open `index.html` in a browser, or serve the `mini-project` directory with any local static file server and open the resulting page.
+- A modern web browser with JavaScript enabled
+- Network access to `https://api.adviceslip.com/advice`
 
-The browser needs network access to reach:
+## Running
+
+No package installation or build step is required. Open [index.html](index.html) in a browser, or serve the `mini-project` directory with any static file server.
+
+The page provides three actions:
+
+1. **Get Advice** fetches one response and displays its advice text.
+2. **Get 3 Advice** fetches three responses concurrently and renders all three.
+3. **Get 3 Advice(Seq)** fetches three responses one after another and renders all three.
+
+Use the browser console to compare the `parallel` and `sequential` timing measurements. Network conditions and connection warm-up can affect the observed results.
+
+## API
+
+The application sends this request:
 
 ```text
-https://api.adviceslip.com/advice
+GET https://api.adviceslip.com/advice
 ```
 
-## API Response
-
-The application currently reads the `advice` property from this response shape:
+It reads `slip.advice` from a response shaped like this:
 
 ```json
 {
@@ -70,17 +81,20 @@ The application currently reads the `advice` property from this response shape:
 }
 ```
 
-## Learning Roadmap
+## Learning Materials
 
-1. Project setup and synchronous versus asynchronous execution
-2. Promises and `fetch()` with `.then()`
-3. `async`/`await` and `try`/`catch`
-4. HTTP status codes, `response.ok`, and loading/error UI
-5. Sequential versus parallel requests with `Promise.all()`
-6. Wrap-up and connection to a future FastAPI backend
+- [plan.md](plan.md) contains the staged objectives and progress checklist.
+- [LEARNED.md](LEARNED.md) records concepts encountered during implementation, including Promises, `response.ok`, `finally`, `Promise.all()`, and sequential versus parallel requests.
+- [stage-13-async-plan.md](stage-13-async-plan.md) contains the original standalone project brief.
 
-See [plan.md](plan.md) for stage objectives and definitions of done. See [LEARNED.md](LEARNED.md) for concepts that have been encountered and verified during implementation.
+## Testing
 
-## Future Direction
+There is no automated test suite. Verify the application manually by exercising each button, observing the loading and disabled state for **Get Advice**, and checking the browser console and Network panel for request behavior.
+
+## Future Improvements
 
 > TODO: What should come next for this project after the async JavaScript learning stages are complete?
+
+## License
+
+> TODO: Confirm the license for this project.
